@@ -11,57 +11,80 @@ module.exports = {
 	},
 
 	getAll: function(req,res) {
-		var user_id = Number(req.query.user_id);
-		var order_by = req.query.order_by;
-		var limit = req.query.limit;
-		var fields = req.query.fields;
-
-		var include_fields = fields.split(",");
-		var fi_product = []
-
-		Products.find()
-		.where({user_id: user_id})
-		.sort('product_name')
-		.limit(limit)
-		.exec(function(err,products) {
 
 
-		var num_products = products.length
+		if (typeof req.query.user_id === 'undefined') {
+			Products.find({}, function(err, products){
+				res.json({"count": products.length, "products": products})
+			});
 
-		while (products.length > 0) {
+		} else {
 
-			var i_product = products.pop();
-			var product_keys = Object.keys(i_product);
-			var remove_arr = _.difference(product_keys,include_fields)
+			var user_id = Number(req.query.user_id);
+			var order_by = req.query.order_by;
+			var limit = req.query.limit;
+			var fields = req.query.fields;
 
-			for (cnt = 0; cnt < remove_arr.length ;  cnt++) {
-				delete i_product[remove_arr[cnt]]
+			var include_fields = fields.split(",");
+			var fi_product = []
+
+			Products.find()
+			.where({user_id: user_id})
+			.sort('product_name')
+			.limit(limit)
+			.exec(function(err,products) {
+
+
+			var num_products = products.length
+
+			while (products.length > 0) {
+
+				var i_product = products.pop();
+				var product_keys = Object.keys(i_product);
+				var remove_arr = _.difference(product_keys,include_fields)
+
+				for (cnt = 0; cnt < remove_arr.length ;  cnt++) {
+					delete i_product[remove_arr[cnt]]
+				}
+
+				fi_product.push(i_product)
 			}
-
-			fi_product.push(i_product)
+				res.json({"count": num_products, products: fi_product})
+			});
 		}
-			res.json({"count": num_products, products: fi_product})
-		});
 	},
 
 	get: function(req,res) {
 		product_id = Number(req.param("product_id", null))
 		Products.find({product_id: product_id}, function(err, products){
-			res.json({"count": products.length, "products": products})
+			res.json(products)
 		});
 
 	},
 
 	update: function(req,res) {
 		var product_id = Number(req.param("product_id",null));
-		Products.update({product_id: product_id}, req.body, function(err, products) {
-			if (err) {
-				res.json({"success": false, "reason": err})
+
+		Products.find({product_id: product_id}, function(err, products){
+
+			if (products.length > 0) {
+
+				Products.update({product_id: product_id}, req.body, function(err, products) {
+					if (err) {
+						res.json({"success": false, "reason": err})
+					} else {
+						res.json({"success": true, "product": products})
+					}
+
+				});
+
 			} else {
-				res.json({"success": true, "product": products})
+
+				res.json({"success": false, "reason": "product not found"})
 			}
 
 		});
+
 	},
 
 	destroy: function(req, res) {

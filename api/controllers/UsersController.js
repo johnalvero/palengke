@@ -14,13 +14,25 @@ module.exports = {
 
 	update: function(req,res) {
 		var user_id = Number(req.param("user_id",null));
-		Users.update({user_id: user_id}, req.body, function(err, users) {
-			if (err) {
-				res.json({"success": false, "reason": err})
+
+		Users.find({user_id: user_id}, function (err,users){
+			if (users.length > 0) {
+
+				Users.update({user_id: user_id}, req.body, function(err, users) {
+					if (err) {
+						res.json({"success": false, "reason": err})
+					} else {
+						res.json({"success": true, "user": users});
+					}
+				});
+
 			} else {
-				res.json({"success": true, "user": users});
+					res.json({"success": false, "reason": "user not found"})
 			}
 		});
+
+
+
 	},
 
 	destroy: function(req, res) {
@@ -31,7 +43,7 @@ module.exports = {
 	    		res.json({"success": "false", "reason": "no user found"})
 	    	} else {
 			    Users.destroy({user_id: user_id}, function(err) {
-			        res.json({"success": "true", "user": users});
+			        res.json({"success": "true"});
 			    });
 	    	}
 	    });

@@ -33,6 +33,7 @@ module.exports.routes = {
     action : "create"
   },
 
+
   'get /products': {
     controller : "Products",
     action : "getAll"
@@ -42,6 +43,10 @@ module.exports.routes = {
     controller : "Products",
     action : "get"
   },  
+
+
+
+
 
   'put /products/:product_id': {
     controller : "Products",
